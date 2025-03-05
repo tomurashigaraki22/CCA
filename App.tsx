@@ -5,126 +5,178 @@
  * @format
  */
 
-import React from 'react';
-import type {PropsWithChildren} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-  ScrollView,
-  StatusBar,
   StyleSheet,
-  Text,
-  useColorScheme,
   View,
+  TouchableOpacity,
+  Text,
+  Alert,
+  SafeAreaView,
+  StatusBar,
+  ActivityIndicator,
+  PermissionsAndroid,
+  Platform,
 } from 'react-native';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+import { CameraModule, CameraPreview } from './src/NativeModules';
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }> {
+  state: { hasError: boolean; error: Error | null } = { 
+    hasError: false, 
+    error: null 
+  };
 
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
+  static getDerivedStateFromError(error: any) {
+    return { hasError: true, error };
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <Text>Something went wrong!</Text>
+          <Text>{this.state.error?.toString()}</Text>
+        </View>
+      );
+    }
+    return this.props.children;
+  }
 }
 
 function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+  const [cameras, setCameras] = useState<string[]>([]);
+  const [isCapturing, setIsCapturing] = useState(false);
+  const [lastCapturePaths, setLastCapturePaths] = useState<string[]>([]);
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+  useEffect(() => {
+    const initializeCameras = async () => {
+      try {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.CAMERA,
+          {
+            title: "Camera Permission",
+            message: "App needs camera access to take pictures",
+            buttonNeutral: "Ask Me Later",
+            buttonNegative: "Cancel",
+            buttonPositive: "OK"
+          }
+        );
+
+        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+          // Get only back cameras
+          const backCameraIds = await CameraModule.getBackCameras();
+          console.log('Available back cameras:', backCameraIds);
+          setCameras(backCameraIds);
+        }
+      } catch (err) {
+        console.error('Error initializing cameras:', err);
+        Alert.alert('Error', err instanceof Error ? err.message : String(err));
+      }
+    };
+
+    initializeCameras();
+  }, []);
+
+  const takePictures = async () => {
+    try {
+      setIsCapturing(true);
+      const paths = await CameraModule.takePicturesSimultaneously();
+      setLastCapturePaths(paths);
+    } catch (err: unknown) {
+      console.error('Failed to capture images:', err);
+      Alert.alert('Error', err instanceof Error ? err.message : String(err));
+    } finally {
+      setIsCapturing(false);
+    }
   };
 
-  /*
-   * To keep the template simple and small we're adding padding to prevent view
-   * from rendering under the System UI.
-   * For bigger apps the reccomendation is to use `react-native-safe-area-context`:
-   * https://github.com/AppAndFlow/react-native-safe-area-context
-   *
-   * You can read more about it here:
-   * https://github.com/react-native-community/discussions-and-proposals/discussions/827
-   */
-  const safePadding = '5%';
-
   return (
-    <View style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        style={backgroundStyle}>
-        <View style={{paddingRight: safePadding}}>
-          <Header/>
-        </View>
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-            paddingHorizontal: safePadding,
-            paddingBottom: safePadding,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </View>
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" />
+      <View style={styles.previewContainer}>
+        {cameras.map((cameraId) => (
+          <View key={cameraId} style={styles.preview}>
+            <CameraPreview 
+              style={styles.previewCamera} 
+              cameraId={cameraId}
+            />
+          </View>
+        ))}
+      </View>
+      
+      <View style={styles.controls}>
+        <TouchableOpacity
+          style={[styles.captureButton, isCapturing && styles.captureButtonDisabled]}
+          onPress={takePictures}
+          disabled={isCapturing}
+        >
+          <View style={styles.captureButtonInner} />
+        </TouchableOpacity>
+        {isCapturing && <ActivityIndicator size="large" color="#fff" />}
+      </View>
+
+      {lastCapturePaths.length > 0 && (
+        <Text style={styles.captureInfo}>
+          Last capture saved to: {lastCapturePaths.join(', ')}
+        </Text>
+      )}
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  container: {
+    flex: 1,
+    backgroundColor: 'black',
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
+  previewContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
   },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
+  preview: {
+    width: '50%',
+    aspectRatio: 3/4,
+    padding: 2,
   },
-  highlight: {
-    fontWeight: '700',
+  previewCamera: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'transparent',
+  },
+  controls: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 20,
+    alignItems: 'center',
+  },
+  captureButton: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  captureButtonDisabled: {
+    opacity: 0.7,
+  },
+  captureButtonInner: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    borderWidth: 2,
+    borderColor: '#000',
+  },
+  captureInfo: {
+    color: '#fff',
+    marginBottom: 10,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    padding: 8,
+    borderRadius: 8,
   },
 });
 
