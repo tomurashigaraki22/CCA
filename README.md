@@ -1,97 +1,90 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# CCA: Camera Capture Application
 
-# Getting Started
+Capture synchronized images from multiple cameras on your mobile device. 📸
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+## Description
 
-## Step 1: Start Metro
+CCA is a React Native application leveraging native modules to capture images simultaneously from multiple cameras. It provides a seamless way to access and control camera hardware directly from JavaScript, enhancing performance and flexibility.
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+## Installation
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+Get started by following these steps:
 
-```sh
-# Using npm
-npm start
+1.  **Clone the repository:**
 
-# OR using Yarn
-yarn start
-```
+    ```bash
+    git clone https://github.com/your-username/CCA.git
+    cd CCA
+    ```
 
-## Step 2: Build and run your app
+2.  **Install dependencies:**
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
+    ```bash
+    npm install
+    ```
 
-### Android
+3.  **Install CocoaPods dependencies for iOS:**
 
-```sh
-# Using npm
-npm run android
+    ```bash
+    cd ios && pod install && cd ..
+    ```
 
-# OR using Yarn
-yarn android
-```
+4.  **Configure Android local properties:**
 
-### iOS
+    Create or update `android/local.properties` with your Android SDK location:
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
+    ```properties
+    sdk.dir=/path/to/your/android/sdk
+    ```
 
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
+## Usage
 
-```sh
-bundle install
-```
+### Running the application
 
-Then, and every time you update your native dependencies, run:
+1.  **Start the Metro bundler:**
 
-```sh
-bundle exec pod install
-```
+    ```bash
+    npm start
+    ```
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+2.  **Run on Android:**
 
-```sh
-# Using npm
-npm run ios
+    ```bash
+    npm run android
+    ```
 
-# OR using Yarn
-yarn ios
-```
+    or
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+3.  **Run on iOS:**
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+    ```bash
+    npm run ios
+    ```
 
-## Step 3: Modify your app
+### Taking Pictures
 
-Now that you have successfully run the app, let's make changes!
+1.  Grant camera permissions when prompted by the application.
+2.  The application displays previews from available back cameras.
+3.  Tap the capture button to take simultaneous pictures from all cameras.
+4.  Captured images are saved to the device's external storage and the paths displayed.
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+## Features
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
+*   📸 **Simultaneous Capture**: Capture images from multiple back cameras at the same time.
+*   📱 **Native Performance**: Utilizes native modules for efficient camera control.
+*   🛠️ **Configurable**: Easily customizable through React Native components and native code.
+*   🖼️ **Camera Preview**: Provides real-time camera previews.
+*   ✔️ **Permissions Handling**: Handles camera permissions gracefully on both Android and iOS.
 
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
+## Technologies Used
 
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+| Technology          | Description                                                                                                 |
+| :------------------ | :---------------------------------------------------------------------------------------------------------- |
+| React Native        | Cross-platform mobile application framework.                                                              |
+| Ruby                | Language for CocoaPods                                                                                     |
+| Native Modules      | Access native device features and APIs.                                                                    |
+| Camera2 API (Android) | Advanced camera control for Android devices.                                                            |
+| Swift (iOS)         | Native language for iOS camera implementations                                                           |
+| Gradle              | Build automation system for Android                                                                       |
+| CocoaPods (iOS)    | Dependency manager for Swift and Objective-C Cocoa projects                                                  |
+| JavaScript
